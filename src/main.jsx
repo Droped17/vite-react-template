@@ -1,7 +1,9 @@
-import React, { createContext,useContext } from 'react'
+import React, { createContext,useContext,useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import { useState } from 'react'
+
+
 
 /* 
 1.สร้าง context โดยใช้ createContext
@@ -15,13 +17,21 @@ const AuthContext = createContext();
 
 function AuthContextProv(props){
   const [isAuth,setIsAuth] = useState(false);
-
+  const [isLoading,setIsLoading] = useState(false);
 
   function handleAuth(){
-    setIsAuth(!isAuth);
+    if (!isAuth) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsAuth(true);
+        setIsLoading(false);
+      }, 3000);
+    }else{
+      setIsAuth(false);
+    }
   }
 
-  const sharedObj = {auth: isAuth,toggle: handleAuth}
+  const sharedObj = {isAuth,handleAuth, isLoading}
 
   return (
     <>
@@ -34,13 +44,14 @@ function AuthContextProv(props){
 function App(){
 
 // Consumer
-const {auth,toggle} = useContext(AuthContext);
+const {isAuth,handleAuth,isLoading} = useContext(AuthContext);
 
   return (
     <>
       <div className='App'>
-        <h1>Welcome.. {!auth ? "Guest" : "User"}</h1>
-        <button onClick={toggle}>{!auth ? "Login" : "Logout"}</button>
+        {/* condition render */}
+        {isLoading ? <h1>Loading..</h1> : <h1>Welcome.. {!isAuth ? "Guest" : "User"}</h1> }
+        <button onClick={handleAuth} disabled={isLoading}>{!isAuth ? "Login" : "Logout"}</button>
       </div>
     </>
   );
