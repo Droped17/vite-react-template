@@ -3,3 +3,21 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+.App{
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 15px;
+}
+
+button{
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: navy;
+  color: white;
+}
