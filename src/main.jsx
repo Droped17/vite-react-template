@@ -1,25 +1,30 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import {Link, useNavigate} from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useParams,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import "./index.css";
-import { func } from "prop-types";
 
 axios.defaults.baseURL = "https://jsonplaceholder.typicode.com";
 
 function HomePage() {
-
   const [friend, setFriend] = useState([]);
 
-  const navigate = useNavigate();
   // Navigate สามารถเลือกใช้ตามจังหวะได้ ต่างกับ Link ที่กดแล้วไปเลย
+  const navigate = useNavigate();
 
-  function handleNavigate(userId){
+  function handleNavigate(userId) {
     if (userId == 1) {
-      navigate('/profile');
-    }else{
+      navigate("/profile");
+    } else {
       navigate(`/profile/${userId}`);
     }
   }
@@ -39,19 +44,17 @@ function HomePage() {
   }, []);
 
   return (
-  
-      <div className="App">
-        <h1>Home Page</h1>
-        {friend.map((f) => (
-          <div onClick={() => handleNavigate(f.id)} className="friend" key={f.id}>
-            <h3>{f.name}</h3>
-            <h3>
-              {f.email}, {f.phone}
-            </h3>
-          </div>
-        ))}
-      </div>
-   
+    <div className="App">
+      <h1>Home Page</h1>
+      {friend.map((f) => (
+        <div onClick={() => handleNavigate(f.id)} className="friend" key={f.id}>
+          <h3>{f.name}</h3>
+          <h3>
+            {f.email}, {f.phone}
+          </h3>
+        </div>
+      ))}
+    </div>
   );
 }
 function ProfilePage() {
@@ -62,9 +65,34 @@ function ProfilePage() {
   );
 }
 function FriendPage() {
+  const { userId } = useParams(); //ใช้ดึงค่าจาก path paremeter แต่ต้องดูด้วยว่า path ตรงหรือไม่
+  console.log(userId);
+
+  const [friend, setFriend] = useState(null);
+
+  async function fetchFriendDetail() {
+    try {
+      const { data } = await axios.get(`/users/${userId}`);
+      console.log(data);
+      setFriend(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchFriendDetail();
+  }, []);
+
   return (
     <>
-      <div className="App">Friend Page</div>
+      <div className="App">
+        {friend && (
+          <div className="friend">
+            <h3>{friend.name}</h3>
+          </div>
+        )}
+      </div>
     </>
   );
 }
@@ -76,19 +104,59 @@ function FeedPage() {
   );
 }
 
+function NotFoundPage() {
+  return (
+    <>
+      <div className="App">404: Not Found</div>
+    </>
+  );
+}
+
+function AppLayout() {
+  return (
+    <>
+      <div>
+        <Link to="/">HOME</Link>
+        <Link to="/profile">Profile Page</Link>
+        <Link to="/profile/5">Friend Page</Link>
+        <Link to="/feed">Feed</Link>
+      </div>
+      <div>
+        <Outlet></Outlet> {/* แทน child ใน nested route ถ้าไม่ใส่จะหน้าขาว*/}
+      </div>
+    </>
+  );
+}
+
 // Routing
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <Link to="/">HOME</Link>
-    <Link to="/profile">Profile Page</Link>
-    <Link to="/profile/5">Friend Page</Link>
-    <Link to="/feed">Feed</Link>
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/profile/:id" element={<FriendPage />} />{" "}
-      {/* dynamic route */}
-      <Route path="/feed" element={<FeedPage />} />
-    </Routes>
-  </BrowserRouter>
+  // <BrowserRouter>  
+  //   <Link to="/">HOME</Link>
+  //   <Link to="/profile">Profile Page</Link>
+  //   <Link to="/profile/5">Friend Page</Link>
+  //   <Link to="/feed">Feed</Link>
+  //   <Routes>
+  //     <Route path="/" element={<HomePage />} />
+  //     <Route path="/profile" element={<ProfilePage />} />
+  //     <Route path="/profile/:userId" element={<FriendPage />} />{" "}
+  //     {/* dynamic route */}
+  //     <Route path="/feed" element={<FeedPage />} />
+  //     {/* <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route> */}
+  //     <Route path="*" element={<Navigate to="/"></Navigate>}></Route>{" "}
+  //     {/* Re-direct */}
+  //   </Routes>
+  // </BrowserRouter>
+
+<BrowserRouter>
+<Routes>
+  <Route path="/" element={<AppLayout></AppLayout>}> {/* parent โผล่ทุกหน้า*/} 
+     {/* child */}
+    <Route path="" element={<HomePage></HomePage>}/>
+    <Route path="profile" element={<ProfilePage></ProfilePage>}/> 
+    <Route path="profile/:userId" element={<FriendPage></FriendPage>}/> 
+    <Route path="feed" element={<FeedPage></FeedPage>}/> 
+    <Route path="*" element={<Navigate to="/" />}/> 
+  </Route>
+</Routes>
+</BrowserRouter>
 );
