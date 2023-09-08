@@ -3,24 +3,17 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import { useState } from 'react'
 
+/* 
+1.สร้าง context โดยใช้ createContext
+2.สร้าง HOC 
+*/
+
+
 
 // Provider
 const AuthContext = createContext();
 
 function AuthContextProv(props){
-  return (
-    <>
-      <AuthContext.Provider>{props.children}</AuthContext.Provider>
-    </>
-  );
-}
-
-// Consumer
-
-
-
-function App(){
-
   const [isAuth,setIsAuth] = useState(false);
 
 
@@ -28,18 +21,35 @@ function App(){
     setIsAuth(!isAuth);
   }
 
+  const sharedObj = {auth: isAuth,toggle: handleAuth}
+
+  return (
+    <>
+      <AuthContext.Provider value={sharedObj}>{props.children}</AuthContext.Provider>
+    </>
+  );
+}
+
+
+function App(){
+
+// Consumer
+const {auth,toggle} = useContext(AuthContext);
+
   return (
     <>
       <div className='App'>
-        <h1>Welcome.. {!isAuth ? "Guest" : "User"}</h1>
-        <button onClick={handleAuth}>{!isAuth ? "Login" : "Logout"}</button>
+        <h1>Welcome.. {!auth ? "Guest" : "User"}</h1>
+        <button onClick={toggle}>{!auth ? "Login" : "Logout"}</button>
       </div>
     </>
   );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  
+  <AuthContextProv>
     <App/>
+  </AuthContextProv>
+    
 
 )
